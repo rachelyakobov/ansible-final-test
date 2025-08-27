@@ -1,0 +1,37 @@
+---
+- name: Debug AWS instance tags
+  debug:
+    var: ansible_aws_instance_tags
+
+- name: Install service using yum (skip if mariadb)
+  yum:
+    name: "{{ ansible_aws_instance_tags['Service'] }}-{{ ansible_aws_instance_tags['Version'] | trim }}"
+    state: present
+  when:
+    - ansible_aws_instance_tags['Service'] != 'mariadb'
+    - ansible_aws_instance_tags['Service'] is defined
+    - ansible_aws_instance_tags['Version'] is defined
+
+- name: Install mariadb differently (if mariadb)
+  dnf:
+    name: "{{ ansible_aws_instance_tags['Service'] }}{{ ansible_aws_instance_tags['Version'] | trim }}-server"
+    state: present
+  when: ansible_aws_instance_tags['Service'] == 'mariadb'
+
+
+- name: Ensure service is started and enabled
+  service:
+    name: "{{ ansible_aws_instance_tags['Service'] }}"
+    state: started
+    enabled: yes
+  when:
+    - ansible_aws_instance_tags['Service'] != 'mariadb'
+
+- name: Ensure service is started and enabled
+  service:
+    name: mariadb.service
+    state: started
+    enabled: yes
+  when:
+    - ansible_aws_instance_tags['Service'] == 'mariadb'
+

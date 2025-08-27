@@ -1,0 +1,33 @@
+---
+- name: Debug ec2_tag_Name
+  debug:
+    var: ec2_tag_Name
+
+- name: Debug ec2_tag_Restart
+  debug:
+    var: ec2_tag_Restart
+
+- name: Set hostname based on Name tag
+  hostname:
+    name: "{{ ec2_tag_Name }}"
+  when: ec2_tag_Name is defined and ec2_tag_Name != ''
+
+- name: Install cron package
+  yum:
+    name: cronie
+    state: present
+
+- name: Ensure cron service is running and enabled
+  service:
+    name: crond
+    state: started
+    enabled: yes
+
+- name: Create crontab entry for restart
+  cron:
+    name: "Restart server"
+    weekday: "{{ ec2_tag_Restart.split(' ')[0] }}"
+    hour: "{{ ec2_tag_Restart.split(' ')[1].split(':')[0] }}"
+    minute: "{{ ec2_tag_Restart.split(' ')[1].split(':')[1] }}"
+    job: "/sbin/shutdown -r now"
+  when: ec2_tag_Restart is defined and ec2_tag_Restart | length > 0

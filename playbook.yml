@@ -1,0 +1,8 @@
+---
+- name: Mange EC2 Instance by Tags
+  hosts: all
+  gather_facts: yes
+  become: true
+  roles:
+    - common
+    - service

@@ -1,0 +1,26 @@
+plugin: aws_ec2
+regions:
+  - us-east-1
+
+filters:
+  tag:Managed: ["true"]
+  tag:Name: ["*rachel*"]
+
+keyed_groups:
+  - key: tags.Name
+    prefix: "name_"
+  - key: tags.Service
+    prefix: "service_"
+  - key: tags.Version
+    prefix: "version_"
+  - key: tags.Restart
+    prefix: "restart_"
+
+compose:
+  ec2_tag_Name: tags.Name
+  ec2_tag_Service: tags.Service
+  ec2_tag_Version: tags.Version
+  ec2_tag_Restart: tags.Restart
+  ansible_aws_instance_tags: tags
+
+ansible_host: public-ip-address
